@@ -185,8 +185,8 @@
         </div>
     </div>
 </div>
-<script type="text/javascript" src="<?= \Yii::$app->request->BaseUrl ?>/js/jquery.fancyCountdown.min.js"></script>
-<script type="text/javascript" src="<?= \Yii::$app->request->BaseUrl ?>/js/swipe.js"></script>
+<?php $this->registerJsFile(\Yii::$app->request->BaseUrl . '/js/jquery.fancyCountdown.min.js'); ?>
+<?php $this->registerJsFile(\Yii::$app->request->BaseUrl . '/js/swipe.js'); ?>
 <script type="text/javascript">
     $(function(){
         $('#fancyCountdown').fancyCountdown({
@@ -221,7 +221,6 @@
                 speed:500,
                 auto:3000,
                 callback: function(){
-                    console.log(this.index);
                     var lis = $(this.element).next("div.slider-page").children();
                     lis.removeClass("active").eq(this.index).addClass("active");
                 }
@@ -260,7 +259,6 @@
             $form.fadeIn();
         });
         $('[href="#signup-complete"]').click(function(e){
-            console.log('kkkk');
             var self = $(e.currenttarget);
             var $form = $('.form-signup');
             $('.form').hide();
