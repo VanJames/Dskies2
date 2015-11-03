@@ -67,12 +67,12 @@
                     <a href="#signup">Already a member? <b>Sign in !</b></a>
                 </div>
                 <div class="bd">
-                    <input type="text" placeholder="e-mail/phone number"/>
-                    <input type="password" placeholder="Password"/>
+                    <input type="text" placeholder="e-mail/phone number" id="login_username"/>
+                    <input type="password" placeholder="Password" id="login_password"/>
                     <span>Forgot your password?</span>
                 </div>
                 <div class="ft">
-                    <a href="#form-close">Sign in</a>
+                    <a href="javascript:void(0)" onclick="dskiesLogin()">Sign in</a>
                 </div>
             </div>
         </div>
@@ -285,4 +285,49 @@
             }
         });
     });
+    function dskiesLogin(){
+        var validEmail = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/;
+        var validMobile = /(1[3-9]\d{9}$)/;
+        var login_username = $.trim($('#login_username').val());
+        var login_password = $.trim($('#login_password').val());
+        if(login_username == '' || login_username == null){
+            alert('请输入邮箱或手机号');
+            return false;
+        }
+        if(login_password == '' || login_password == null){
+            alert('请输入密码');
+            return false;
+        }
+        if(login_username.indexOf('@')>=0){
+            if(validEmail.test(login_username) == false){
+                alert('请输入正确的邮箱');
+                return false;
+            }
+        }else{
+            if(validMobile.test(login_username) == false){
+                alert('请输入正确的手机号码');
+                return false;
+            }
+        }
+        $.ajax({
+            url: '/Dskies2/web/index.php?r=site/login',
+            data: {'username':login_username,'password':login_password},
+            dataType:'json',
+            type: 'post',
+            success:function(data) {
+                console.log('login');
+                if(data.code == -1){
+                    alert(data.msg);
+                }else{
+                    if(data.url != ''){
+                        location.href = data.url;
+                    }else{
+                        //history.go(0);
+                        location.reload();
+                    }
+                }
+            },
+        });
+    }
+
 </script>

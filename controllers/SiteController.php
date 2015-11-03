@@ -2,12 +2,14 @@
 
 namespace app\controllers;
 
+use app\models\Verify;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
-use app\models\LoginForm;
 use app\models\ContactForm;
+use app\components\Util;
+use app\models\User;
 
 class SiteController extends Controller
 {
@@ -49,29 +51,86 @@ class SiteController extends Controller
 
     public function actionIndex()
     {
+        /* 获取到前一次进来页面 并存入session */
+        $url = '';
+        if (isset($_SERVER['HTTP_REFERER'])) {
+            $url = $_SERVER['HTTP_REFERER'];
+        }
+        Yii::$app->session->set('url', $url);
+        /* 获取到前一次进来页面  */
+
+        $this->view->title = 'dskies';
         return $this->render('index');
+    }
+
+    public function actionValidMobile()
+    {
+        $res = false;
+        $mobile = trim(Yii::$app->request->post('mobile'));
+        $mobile && $userInfo = User::find()->where(['mobile' => $mobile])->one();
+        $userInfo && !empty($userInfo) && $res = true;
+        return $res;
+    }
+
+    public function actionValidEmail()
+    {
+        $res = false;
+        $email = trim(Yii::$app->request->post('email'));
+        $email && $userInfo = User::find()->where(['email' => $email])->one();
+        $userInfo && !empty($userInfo) && $res = true;
+        return $res;
     }
 
     public function actionLogin()
     {
-        if (!\Yii::$app->user->isGuest) {
-            return $this->goHome();
+        $username = trim(Yii::$app->request->post('username'));
+        $password = trim(Yii::$app->request->post('password'));
+        $res = [];
+        if (empty($username) || empty($password)) {
+            $res['code'] = -1;
+            $res['msg'] = '账号或密码不能为空';
+            echo json_encode($res);
+            exit;
         }
+        $arr = [];
+        if (strpos($username, '@') === false) {
+            $arr['mobile'] = $username;
+        } else {
+            $arr['email'] = $username;
+        }
+        $arr['password'] = $password;
+        $userInfo = User::find()->where($arr)->one();
+        if ($userInfo && !empty($userInfo)) {
+            Yii::$app->session->set('userId', $userInfo['id']);
+            Yii::$app->session->set('userName', $userInfo['given_name'] . $userInfo['family_name']);
+            $res['code'] = 0;
+            $res['msg'] = '登录成功';
+            $res['url'] = Yii::$app->session->get('url');
+            echo json_encode($res);
+            exit;
+        } else {
+            $res['code'] = -1;
+            $res['msg'] = '账号或密码错误';
+            echo json_encode($res);
+            exit;
+        }
+    }
 
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        }
-        return $this->render('login', [
-            'model' => $model,
-        ]);
+    public function actionSession()
+    {
+        return $this->render('session');
     }
 
     public function actionLogout()
     {
+        /*
         Yii::$app->user->logout();
-
         return $this->goHome();
+        */
+        Yii::$app->session->remove('userId');
+        Yii::$app->session->remove('userName');
+        Yii::$app->session->remove('url');
+        return $this->redirect('/site/session');
     }
 
     public function actionContact()
@@ -81,10 +140,11 @@ class SiteController extends Controller
             Yii::$app->session->setFlash('contactFormSubmitted');
 
             return $this->refresh();
+        } else {
+            return $this->render('contact', [
+                'model' => $model,
+            ]);
         }
-        return $this->render('contact', [
-            'model' => $model,
-        ]);
     }
 
     public function actionAbout()
@@ -92,32 +152,68 @@ class SiteController extends Controller
         return $this->render('about');
     }
 
+    public function actionSendCode()
+    {
+        $request = Yii::$app->request;
+        $mobile = $request->post('mobile');
+        if (empty($mobile)) {
+            echo json_encode(array('status' => 0, 'error_code' => 400, 'message' => 'Missing mobile'),
+                JSON_PRETTY_PRINT);
+            exit;
+        }
+        //todo verify mobile number
+        $verify = Verify::find()->where(['mobile' => $mobile])->one();
+        if (empty($verify)) {
+            $verify = new Verify();
+            $verify->mobile = $mobile;
+            $verify->save();
+        }
+        $code = Util::generateString(4);
+        $verify->code = $code;
+        $verify->save();
+
+        //todo retry
+        $success = Util::sendSMS($verify->mobile, $verify->code);
+        echo json_encode([
+            'status' => $success,
+        ], JSON_PRETTY_PRINT);
+        exit;
+    }
+
     public function actionRegister()
     {
         $request = Yii::$app->request;
-        $username = $request->post('username');
-        $email = $request->post('email');
         $password = $request->post('password');
-        if (empty($username) or empty($email) or empty($password)) {
-            $this->setHeader(400);
+        $givenName = $request->post('givenName');
+        $familyName = $request->post('familyName');
+        $specialization = $request->post('specialization');
+//        $portfolio = $request->post('portfolio');
+        $email = $request->post('email');
+        $mobile = $request->post('mobile');
+        $code = $request->post('code');
+        if (empty($password) or empty($givenName) or empty($familyName) or empty($specialization) or empty($email)
+            or empty($mobile) or empty($code)
+        ) {
             echo json_encode(array('status' => 0, 'error_code' => 400, 'message' => 'Missing params'),
                 JSON_PRETTY_PRINT);
             exit;
         }
 
         $db = Yii::$app->db;
-        $projectName = $request->post('gbid');
-        if (!empty($projectName)) {
-            $sql = "SELECT id FROM project WHERE name = :projectName";
-            $params = [
-                ':projectName' => $projectName,
-            ];
-            $projectId = $db->createCommand($sql, $params)->queryScalar();
+        $verify = Verify::find()->where(['mobile' => $mobile])->one();
+        if (empty($verify)) {
+            echo json_encode([
+                'status' => 0,
+                'message' => 'Wrong verify message',
+            ], JSON_PRETTY_PRINT);
         }
-        if (empty($projectId)) {
-            $projectId = 0;
-        }
+        if ($code != $verify->code) {
+            echo json_encode([
+                'status' => 0,
+                'message' => 'Wrong verify message',
+            ], JSON_PRETTY_PRINT);
 
+        }
         if (strlen($password) < 6 or strlen($password) > 20) {
             $this->setHeader(400);
             echo json_encode(array('status' => 0, 'error_code' => 400, 'message' => 'Password length must in [6, 20]'),
@@ -132,31 +228,33 @@ class SiteController extends Controller
         ];
         $emailExist = $db->createCommand($sql, $params)->queryScalar();
         if ($emailExist) {
-            $this->setHeader(400);
             echo json_encode(array('status' => 0, 'error_code' => 400, 'message' => 'Email exists'),
                 JSON_PRETTY_PRINT);
             exit;
         }
 
-        $username = trim($username);
+        $phoneExist = $db->createCommand("SELECT 1 FROM user WHERE mobile = :mobile",
+            [':mobile' => $mobile])->queryScalar();
+        if ($phoneExist) {
+            echo json_encode(array('status' => 0, 'error_code' => 400, 'message' => 'Mobile exists'),
+                JSON_PRETTY_PRINT);
+            exit;
+        }
+
+        $givenName = trim($givenName);
+        $familyName = trim($familyName);
         $password = Util::hashPassword(trim($password));
-        $sql = "INSERT user (name, password, email, project_id) VALUES (:name, :password, :email, :projectId)";
-        $params = [
-            ':name' => $username,
-            ':password' => $password,
-            ':email' => $email,
-            ':projectId' => $projectId,
-        ];
-        $db->createCommand($sql, $params)->execute();
+        $user = new User();
+        $user->password = $password;
+        $user->given_name = $givenName;
+        $user->family_name = $familyName;
+        $user->specialization = $specialization;
+        $user->email = $email;
+        $user->mobile = $mobile;
+        $user->is_verified = 1;
+        $user->save();
 
-        $sql = "SELECT id user_id, name user_name, project_id FROM user WHERE name = :name";
-        $params = [
-            ':name' => $username,
-        ];
-        $data = $db->createCommand($sql, $params)->queryOne();
-
-        $this->setHeader(200);
-        echo json_encode(array('status' => 1, 'data' => $data, 'message' => 'Register success'), JSON_PRETTY_PRINT);
+        echo json_encode(array('status' => 1, 'message' => 'Register success'), JSON_PRETTY_PRINT);
         exit;
     }
 

@@ -1,11 +1,11 @@
 Options +FollowSymLinks
 IndexIgnore */*
 RewriteEngine on
+RewriteBase /Library/WebServer/Documents/Dskies2/
 
 # if a directory or a file exists, use it directly
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-# RewriteRule ^(.*)\?*$ index.php/$1 [L,QSA]
 
 # otherwise forward it to index.php
 RewriteRule . index.php

@@ -15,6 +15,7 @@ use Yii;
  * @property integer $portfolio
  * @property string $email
  * @property string $mobile
+ * @property integer $is_verified
  * @property string $avatar
  * @property string $last_login
  * @property integer $login_times
@@ -37,7 +38,7 @@ class User extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['portfolio', 'login_times'], 'integer'],
+            [['portfolio', 'is_verified', 'login_times'], 'integer'],
             [['last_login', 'created', 'modified'], 'safe'],
             [['password', 'avatar'], 'string', 'max' => 255],
             [['given_name', 'family_name', 'specialization', 'email'], 'string', 'max' => 64],
@@ -61,6 +62,7 @@ class User extends \yii\db\ActiveRecord
             'portfolio' => 'Portfolio',
             'email' => 'Email',
             'mobile' => 'Mobile',
+            'is_verified' => 'Is Verified',
             'avatar' => 'Avatar',
             'last_login' => 'Last Login',
             'login_times' => 'Login Times',
