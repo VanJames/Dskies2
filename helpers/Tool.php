@@ -1,6 +1,5 @@
 <?php
 /**
- * ¹¤¾ßÀà
  * @User fanxu(746439274@qq.com)
  */
 namespace app\helpers;
@@ -10,7 +9,7 @@ use Yii;
 class Tool
 {
     /**
-     * Êä³ö×Ô¶¨ÒåÒì³£
+     * ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ì³£
      * @param string $message
      * @param int $errorCode
      * @param int $status
@@ -29,7 +28,7 @@ class Tool
         );
     }
     /**
-     * Êä³öjson¸ñÊ½Êı¾İ
+     * ï¿½ï¿½ï¿½jsonï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½
      * @param array $data
      * @param int $errorCode
      * @param int $status
@@ -46,5 +45,18 @@ class Tool
                 JSON_PRETTY_PRINT
             )
         );
+    }
+
+    /**
+     * æ ¼å¼åŒ–è·å–ä¼ æ¥çš„æ‰€æœ‰æ•°æ®ï¿½ï¿½
+     * @return array
+     */
+    public static function getAll(){
+        $data = array_merge( Yii::$app->request->post() , Yii::$app->request->get() );
+        unset( $data['r'] );
+        foreach( $data as $k => $v ){
+            $data[$k] = htmlspecialchars( $v );
+        }
+        return $data;
     }
 }

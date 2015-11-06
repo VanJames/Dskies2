@@ -1,6 +1,5 @@
 <?php
 /**
- * Âß¼­²ã»ùÀà
  * @User fanxu(746439274@qq.com)
  */
 namespace app\logical;
@@ -10,18 +9,21 @@ use Yii;
 class BaseLogical
 {
     /**
-     * µ¥Àý
+     * ï¿½ï¿½ï¿½ï¿½
      * @var null
      */
     protected static $_singleInstance = null;
 
     /**
-     * »ñÈ¡µ¥Àý
-     * @return self
+     * ï¿½ï¿½ï¿½ï¿½
+     * @var null
      */
-    public static function getInstance(){
-        if( self::$_singleInstance === null || ! ( self::$_singleInstance instanceof self ) ){
-            self::$_singleInstance = new self();
-        }
-    }
+    protected static $dataModel = null;
+
+    /**
+     * ï¿½ï¿½ï¿½ï¿½
+     * @var array
+     */
+    protected static $dataFields = array();
+
 }
