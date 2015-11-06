@@ -5,26 +5,19 @@ namespace app\helpers\CacheLock;
  */
 class  CacheLock
 {
-    //ÎÄ¼þËø´æ·ÅÂ·¾¶
     private $path = null;
-    //ÎÄ¼þ¾ä±ú
     private $fp = null;
-    //ËøÁ£¶È,ÉèÖÃÔ½´óÁ£¶ÈÔ½Ð¡
     private $hashNum = 10000;
     //cache key
     private $name;
-    //ÊÇ·ñ´æÔÚeaccelerator±êÖ¾
     private  $eAccelerator = false;
 
     /**
-     * ¹¹Ôìº¯Êý
-     * ´«ÈëËøµÄ´æ·ÅÂ·¾¶£¬¼°cache keyµÄÃû³Æ£¬ÕâÑù¿ÉÒÔ½øÐÐ²¢·¢
-     * @param string $path ËøµÄ´æ·ÅÄ¿Â¼£¬ÒÔ"/"½áÎ²
+     * @param string $path ï¿½
      * @param string $name cache key
      */
     public function __construct($name,$path='/tmp')
     {
-        //ÅÐ¶ÏÊÇ·ñ´æÔÚeAccelerator,ÕâÀïÆôÓÃÁËeAcceleratorÖ®ºó¿ÉÒÔ½øÐÐÄÚ´æËøÌá¸ßÐ§ÂÊ
         $this->eAccelerator = function_exists("eaccelerator_lock");
         if(!$this->eAccelerator)
         {
@@ -44,7 +37,6 @@ class  CacheLock
 
     /**
      * crc32
-     * crc32·â×°
      * @param int $string
      * @return int
      */
@@ -58,15 +50,12 @@ class  CacheLock
         return $crc;
     }
     /**
-     * ¼ÓËø
      * Enter description here ...
      */
     public function lock()
     {
-        //Èç¹ûÎÞ·¨¿ªÆôeaÄÚ´æËø£¬Ôò¿ªÆôÎÄ¼þËø
         if(!$this->eAccelerator)
         {
-            //ÅäÖÃÄ¿Â¼È¨ÏÞ¿ÉÐ´
             $this->fp = fopen($this->path, 'w+');
             if($this->fp === false)
             {
@@ -79,7 +68,6 @@ class  CacheLock
     }
 
     /**
-     * ½âËø
      * Enter description here ...
      */
     public function unlock()
@@ -91,7 +79,6 @@ class  CacheLock
                 flock($this->fp, LOCK_UN);
                 clearstatcache();
             }
-            //½øÐÐ¹Ø±Õ
             fclose($this->fp);
         }else{
             return eaccelerator_unlock($this->name);

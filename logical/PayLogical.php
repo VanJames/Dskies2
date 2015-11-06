@@ -1,6 +1,5 @@
 <?php
 /**
- * 支付逻辑层
  * @User fanxu(746439274@qq.com)
  */
 namespace app\logical;
@@ -26,7 +25,7 @@ class PayLogical extends BaseLogical
     const PAYMENT_TYPE_ALI_PAY= 1;
 
     /**
-     * 前去支付
+     * 前去支锟斤拷
      */
     public function doPay(){
         switch( $this->paymentType ){
@@ -35,7 +34,7 @@ class PayLogical extends BaseLogical
             case self::PAYMENT_TYPE_ALI_PAY:
                 break;
             default :
-                Tool::throwCustomerException('支付方式错误!');
+                Tool::throwCustomerException('paymentType not exist!');
         }
     }
 

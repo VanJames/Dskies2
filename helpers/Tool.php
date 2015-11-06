@@ -9,7 +9,6 @@ use Yii;
 class Tool
 {
     /**
-     * ����Զ����쳣
      * @param string $message
      * @param int $errorCode
      * @param int $status
@@ -28,7 +27,6 @@ class Tool
         );
     }
     /**
-     * ���json��ʽ����
      * @param array $data
      * @param int $errorCode
      * @param int $status
@@ -48,7 +46,6 @@ class Tool
     }
 
     /**
-     * 格式化获取传来的所有数据��
      * @return array
      */
     public static function getAll(){

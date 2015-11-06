@@ -8,7 +8,6 @@ namespace app\controllers;
 use app\helpers\Tool;
 use app\models\User;
 use Yii;
-use yii\filters\AccessControl;
 use yii\web\Controller;
 
 class UserBaseController extends Controller
@@ -22,16 +21,6 @@ class UserBaseController extends Controller
      * @var array
      */
     protected $userInfo = array();
-
-    public function behaviors()
-    {
-        return [
-            'access' => [
-                'class' => AccessControl::className(),
-                'only' => ['logout'],
-            ],
-        ];
-    }
 
     /**
      * @inheritdoc
