@@ -14,6 +14,16 @@ use Yii;
  **/
 class PayLogical extends BaseLogical
 {
+
+    /**
+     * 支付状态定义
+     */
+    const PAY_STATUS_CREATED = 0;
+    const PAY_STATUS_FINISHED = 10;
+    const PAY_STATUS_CLOSED =   20;
+    const PAY_STATUS_SUCCEEDED = 30;
+    const PAY_STATUS_REFUNDED = 40;
+
     /**
      * @var int
      */
@@ -24,8 +34,11 @@ class PayLogical extends BaseLogical
      */
     const PAYMENT_TYPE_ALI_PAY= 1;
 
+    public static function createInstance(){
+
+    }
+
     /**
-     * ǰȥ֧��
      */
     public function doPay(){
         switch( $this->paymentType ){
